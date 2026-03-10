@@ -1,0 +1,10 @@
+[
+  {"id":"a1","name":"Miriam Goldfarb","loc":"Jerusalem","bio":"Illuminated manuscripts fused with Jungian symbolism. Her Sefirot diagrams blend Kabbalistic structure with depth-psychological mapping.","trad":"Kabbalah · Illumination","avatar":"🕊"},
+  {"id":"a2","name":"Daniel Rosenfeld","loc":"Brooklyn, NY","bio":"Sacred geometry and Hebrew letterforms as archetypal language. Trained at Betzalel Academy of Arts in Jerusalem.","trad":"Sacred Geometry · Letters","avatar":"⬡"},
+  {"id":"a3","name":"Leah Sternberg","loc":"Tel Aviv","bio":"Jungian analyst turned painter. Her Shadow series treats the Qliphoth as visual psychology — integration through image.","trad":"Jungian · Shadow Work","avatar":"◑"},
+  {"id":"a4","name":"Cyrille Beaumont","loc":"Paris","bio":"Alchemical illustrator working in the tradition of Michael Maier and the Rosicrucians. Ink and gold leaf on vellum.","trad":"Alchemy · Hermetics","avatar":"⚗"},
+  {"id":"a5","name":"Rachel Ben-David","loc":"Chicago","bio":"Mandala painter whose circular compositions map individuation through archetypal symbols across multiple traditions.","trad":"Mandalas · Archetypes","avatar":"◎"},
+  {"id":"a6","name":"Amos Shapiro","loc":"London","bio":"Printmaker combining etching with Lurianic cosmology — tzimtzum, shevirat ha-kelim, and tikkun as visual metaphors.","trad":"Kabbalah · Printmaking","avatar":"▲"},
+  {"id":"a7","name":"Naomi Blum","loc":"Montreal","bio":"Mixed media explorations of the divine feminine across traditions — Shekinah, Sophia, Isis, and Shakti as one luminous presence.","trad":"Divine Feminine · Mixed Media","avatar":"✦"},
+  {"id":"a8","name":"Tariq Mansour","loc":"Istanbul","bio":"Sufi-inspired geometric abstraction. The 99 names of the divine dissolved into pattern. Calligraphy as cosmic motion.","trad":"Sufism · Geometric","avatar":"✺"}
+]
