@@ -1,14 +1,19 @@
-import './globals.css';
+import { AuthProvider } from '@/lib/auth-context'
+import './globals.css'
 
 export const metadata = {
   title: "Mystic's Grove — Sacred Art Gallery",
-  description: 'A curated gallery at the confluence of the world\'s mystical traditions — Kabbalah, Jungian depth, alchemy, sacred geometry, Sufism.',
-};
+  description: "A curated gallery at the confluence of the world's mystical traditions.",
+}
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
-  );
+  )
 }

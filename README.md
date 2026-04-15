@@ -1,83 +1,72 @@
-# Mystic's Grove — Sacred Art Gallery
+# Mystic's Grove — Supabase Integration Files
 
-A curated gallery at the confluence of the world's mystical traditions.
+## What's in this zip
 
-## Quick Start
+```
+lib/
+  supabase.js        → Supabase browser client
+  auth-context.js    → Auth provider (user session + profile)
+app/
+  layout.js          → Updated root layout with AuthProvider
+.env.local.template  → Copy this to .env.local and fill in your keys
+```
 
+## Setup steps
+
+### 1. Copy files into your project
+- Drop `lib/supabase.js` and `lib/auth-context.js` into your project's `lib/` folder (create it if it doesn't exist)
+- Replace your existing `app/layout.js` with the one included here
+
+### 2. Create your .env.local
+- Copy `.env.local.template` → rename it to `.env.local`
+- Fill in your real Supabase URL and anon key from:
+  Supabase dashboard → Project Settings → API
+
+### 3. Update app/page.js
+Add this to the top of your page component to load artworks from Supabase:
+
+```js
+'use client'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase'
+
+// Inside your component:
+const [artworks, setArtworks] = useState([])
+const [artists, setArtists] = useState([])
+
+useEffect(() => {
+  const supabase = createClient()
+
+  async function loadData() {
+    const { data: artworkData } = await supabase
+      .from('artworks')
+      .select(`
+        *,
+        artist:profiles(full_name, location, tradition, avatar_emoji)
+      `)
+      .eq('status', 'approved')
+      .order('submitted_at', { ascending: false })
+
+    const { data: artistData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'artist')
+
+    setArtworks(artworkData ?? [])
+    setArtists(artistData ?? [])
+  }
+
+  loadData()
+}, [])
+```
+
+### 4. Push to GitHub
 ```bash
-npm install
-npm run dev
+git add .
+git commit -m "add supabase auth and data layer"
+git push
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-## Deploy to Vercel
-
-1. Push this repo to GitHub
-2. Go to [vercel.com](https://vercel.com) → Import Project
-3. Select the repo → Deploy
-
-That's it. Vercel auto-detects Next.js.
-
-## Project Structure
-
-```
-mystics-grove/
-├── app/
-│   ├── layout.js        # Root layout, metadata, fonts
-│   ├── page.js          # Main page (all sections + cart logic)
-│   └── globals.css      # All styles
-├── components/          # (Future: break page.js into components)
-├── data/
-│   ├── artists.json     # Artist roster — edit this to add/remove artists
-│   ├── artworks.json    # Artwork inventory — edit this for new pieces
-│   └── svgThumbs.js     # SVG placeholder thumbnails
-├── public/
-│   └── images/
-│       └── hero.png     # Hero section artwork
-├── package.json
-├── next.config.js       # Static export config
-└── jsconfig.json        # Path aliases (@/)
-```
-
-## Adding a New Artist
-
-Edit `data/artists.json`:
-```json
-{
-  "id": "a9",
-  "name": "New Artist Name",
-  "loc": "City, Country",
-  "bio": "Brief description of their work and tradition.",
-  "trad": "Tradition · Medium",
-  "avatar": "🔮"
-}
-```
-
-## Adding a New Artwork
-
-Edit `data/artworks.json`:
-```json
-{
-  "id": "w11",
-  "artistId": "a9",
-  "title": "Artwork Title",
-  "category": "kabbalah",
-  "type": "print",
-  "tradition": "Kabbalah",
-  "price": 200,
-  "desc": "Description of the piece.",
-  "sizes": "16×20\" · 24×30\"",
-  "stripeLink": "https://buy.stripe.com/YOUR_LINK",
-  "svgKey": "einSof",
-  "sold": false
-}
-```
-
-Categories: `kabbalah`, `alchemy`, `archetypes`, `geometry`
-Types: `print`, `original`
-
-## Roadmap
-
-- **Phase 2**: Supabase backend (move JSON → Postgres, admin dashboard)
-- **Phase 3**: Artist portal (auth, self-serve uploads, approval queue)
+## Important
+- NEVER commit `.env.local` to GitHub — make sure it's in your `.gitignore`
+- The gallery will show empty until artworks are approved through the admin dashboard

@@ -1,18 +1,39 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import artists from '@/data/artists.json';
-import artworks from '@/data/artworks.json';
+import { useState, useCallback, useEffect } from 'react';
 import thumbs from '@/data/svgThumbs';
-
-const getArtist = (id) => artists.find((a) => a.id === id);
+import { createClient } from '@/lib/supabase';
 
 export default function HomePage() {
+  const [artworks, setArtworks] = useState([]);
+  const [artists, setArtists] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
   const [currentFilter, setCurrentFilter] = useState('all');
   const [cartOpen, setCartOpen] = useState(false);
   const [toast, setToast] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    async function loadData() {
+      const { data: artworkData } = await supabase
+        .from('artworks')
+        .select(`*, artist:profiles(id, full_name, location, tradition, avatar_emoji)`)
+        .eq('status', 'approved')
+        .order('submitted_at', { ascending: false });
+
+      const { data: artistData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('role', 'artist');
+
+      setArtworks(artworkData ?? []);
+      setArtists(artistData ?? []);
+      setLoading(false);
+    }
+    loadData();
+  }, []);
 
   const showToast = useCallback((msg) => {
     setToast(msg);
@@ -29,7 +50,7 @@ export default function HomePage() {
     }
     setCart((prev) => [...prev, w]);
     showToast(`Added — ${w.title}`);
-  }, [cart, showToast]);
+  }, [cart, artworks, showToast]);
 
   const quickAdd = useCallback((id) => {
     addToCart(id);
@@ -169,13 +190,22 @@ export default function HomePage() {
           ))}
         </div>
         <div className="shop-grid">
-          {filtered.map((w) => {
-            const artist = getArtist(w.artistId);
+          {loading ? (
+            <div style={{ padding: '4rem 1.5rem', color: 'var(--ink-m)', fontSize: '.9rem' }}>Loading collection…</div>
+          ) : filtered.length === 0 ? (
+            <div style={{ padding: '4rem 1.5rem', color: 'var(--ink-m)', fontSize: '.9rem' }}>No works yet in this category.</div>
+          ) : filtered.map((w) => {
             const inCart = cart.some((c) => c.id === w.id);
+            const artistName = w.artist?.full_name || '';
+            const artistLoc = w.artist?.location || '';
             return (
               <div className="art-card" key={w.id}>
                 <div className="card-img">
-                  <div dangerouslySetInnerHTML={{ __html: thumbs[w.svgKey] || '' }} />
+                  {w.image_url ? (
+                    <img src={w.image_url} alt={w.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  ) : (
+                    <div dangerouslySetInnerHTML={{ __html: thumbs[w.svg_key] || '' }} />
+                  )}
                   <div className="card-hover-overlay">
                     {!w.sold && (
                       <button className="overlay-add" onClick={() => quickAdd(w.id)}>
@@ -195,11 +225,11 @@ export default function HomePage() {
                     <span className="card-type">{w.type === 'original' ? 'Original' : 'Print'}</span>
                   </div>
                   <h3 className="card-title">{w.title}</h3>
-                  <div className="card-artist">{artist?.name || ''} · {artist?.loc || ''}</div>
-                  <p className="card-desc">{w.desc}</p>
+                  <div className="card-artist">{artistName}{artistLoc ? ` · ${artistLoc}` : ''}</div>
+                  <p className="card-desc">{w.description}</p>
                   <div className="card-footer">
                     <div>
-                      <div className="card-price">${w.price.toLocaleString()}</div>
+                      <div className="card-price">${Number(w.price).toLocaleString()}</div>
                       <div className="card-sizes">{w.sizes}</div>
                     </div>
                     {w.sold ? (
@@ -241,11 +271,11 @@ export default function HomePage() {
         <div className="artists-grid">
           {artists.map((a) => (
             <div className="artist-card" key={a.id}>
-              <span className="artist-avatar">{a.avatar}</span>
-              <div className="artist-name">{a.name}</div>
-              <div className="artist-loc">{a.loc}</div>
+              <span className="artist-avatar">{a.avatar_emoji || '🎨'}</span>
+              <div className="artist-name">{a.full_name}</div>
+              <div className="artist-loc">{a.location}</div>
               <p className="artist-bio">{a.bio}</p>
-              <span className="artist-tradition">{a.trad}</span>
+              <span className="artist-tradition">{a.tradition}</span>
             </div>
           ))}
         </div>
@@ -353,14 +383,19 @@ export default function HomePage() {
             <div className="cart-empty">Your collection is empty.<br />Add a work to begin.</div>
           ) : (
             cart.map((item) => {
-              const a = getArtist(item.artistId);
               return (
                 <div className="cart-item" key={item.id}>
-                  <div className="cart-item-thumb" dangerouslySetInnerHTML={{ __html: thumbs[item.svgKey] || '' }} />
+                  <div className="cart-item-thumb">
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div dangerouslySetInnerHTML={{ __html: thumbs[item.svg_key] || '' }} />
+                    )}
+                  </div>
                   <div style={{ flex: 1 }}>
                     <div className="cart-item-title">{item.title}</div>
-                    <div className="cart-item-artist">{a?.name || ''}</div>
-                    <div className="cart-item-price">${item.price.toLocaleString()}</div>
+                    <div className="cart-item-artist">{item.artist?.full_name || ''}</div>
+                    <div className="cart-item-price">${Number(item.price).toLocaleString()}</div>
                   </div>
                   <button className="cart-item-remove" onClick={() => removeFromCart(item.id)}>✕</button>
                 </div>
